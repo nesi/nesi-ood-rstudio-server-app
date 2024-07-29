@@ -50,9 +50,11 @@ attributes:
     widget: select
     label: "R Version"
     options:
-      - [ "4.4.1", "R/4.4.1-foss-2023a" ]
-      - [ "4.3.3", "R/4.3.3-foss-2023a" ]
       - [ "4.3.2", "R/4.3.2-foss-2023a" ]
+      - [ "4.3.1", "R/4.3.1-foss-2023a" ]
+      - [ "4.2.1", "R/4.2.1-gimkl-2022a" ]
+      - ["Bioconductor-3.17","R-bundle-Bioconductor/3.17-gimkl-2022a-R-4.3.1"] 
+      - ["R-Geo/4.3.2","R-Geo/4.3.2-foss-2023a"]
 
   # Any extra command line arguments to feed to the `jupyter notebook ...`
   # command that launches the Jupyter notebook within the batch job
