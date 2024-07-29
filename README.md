@@ -1,2 +1,2 @@
 # nesi-ood-rstudio-server-app
-OOD RStudio-server for app on Analysis Environment (Beta)
+OOD RStudio-serve  app for Analysis Environment (Beta)
