@@ -1,34 +1,69 @@
-# Job submission configuration file
-#
+<%
+   user = OodSupport::User.new
+   ood_nfs_server = Resolv.getaddress("ood-dev-nfs-node")
+   software_nfs_server = Resolv.getaddress("external-nfs")
+%>
 ---
-
-#
-# Configure the content of the job script for the batch job here
-# @see http://www.rubydoc.info/gems/ood_core/OodCore/BatchConnect/Template
-#
 batch_connect:
-  # We use the basic web server template for generating the job script
-  #
-  # @note Do not change this unless you know what you are doing!
   template: "basic"
   conn_params:
     - csrf_token
-  # You can override the command used to query the hostname of the compute node
-  # here
-  #
-  # @note It is **highly** recommended this be set in the global cluster
-  #   configuration file so that all apps can take advantage of it by default
-  #
-  #set_host: "host=$(hostname -A | awk '{print $2}')"
-
-#
-# Configure the job script submission parameters for the batch job here
-# @see http://www.rubydoc.info/gems/ood_core/OodCore/Job/Script
-#
 script:
-  job_name: "ood-rstudioserver"
+  wall_time: "<%= wall_time.to_i * 3600 %>"
   native:
-    - <%= "--nodes=1" %>
-    - <%= "--ntasks=#{num_cores}" %>
-    - <%= "--mem=#{num_mem}gb" %>
-    - <%= "--nodelist=#{node}" %>
+    container:
+      name: "rstudio"
+      image: "ghcr.io/lbrick/nesi-docker-base/nesi-docker-base:0.1"
+      command: ["/bin/bash","-l","<%= staged_root %>/job_script_content.sh"]
+      restart_policy: 'OnFailure'
+      env:
+        TZ: "Pacific/Auckland"
+      port: "8080"
+      cpu: "<%= num_cores %>"
+      memory: "<%= num_mem %>Gi"
+    mounts:
+      - type: nfs
+        name: home
+        host: <%= ood_nfs_server %>
+        path: /srv/homes
+        destination_path: /home/shared
+      - type: nfs
+        name: software
+        host: <%= software_nfs_server %>
+        path: /mnt/data-migration
+        destination_path: /opt/nesi
+      - type: host
+        name: nslcd-socket
+        host_type: Socket
+        path: /var/run/nslcd/socket
+        destination_path: /var/run/nslcd/socket
+      - type: host
+        name: nsswitch-conf
+        host_type: File
+        path: /etc/nsswitch.conf
+        destination_path: /etc/nsswitch.conf
+    configmap:
+      files:
+        - filename: "logging.conf"
+          data: |
+            [*]
+            log-level=debug
+            logger-type=file
+            log-dir=<%= staged_root %>/logs
+          mount_path: '/etc/rstudio'
+        - filename: "database.conf"
+          data: |
+            directory=/tmp/lib/rstudio-server
+          mount_path: '/etc/rstudio/database'
+        - filename: 'k8_helper'
+          data: |
+            #!/usr/bin/env bash
+
+            set -x
+
+            KEY=$1
+            VALUE=$(echo -n $2 | base64)
+            CFG="$(hostname)-secret"
+
+            kubectl get secret ${CFG} -o json | jq --arg key $KEY --arg value $VALUE '.data[$key] = $value'  | kubectl apply -f -
+          mount_path: '/opt/open_ondemand/helpers'
