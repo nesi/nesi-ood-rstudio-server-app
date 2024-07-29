@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
+echo "Running script.sh.erb script"
+
+echo "module purge"
 module purge
 
 # load RStudio Server
+echo "module load"
 module load <%= context.Rserver %>
 
 # load R
@@ -87,4 +91,5 @@ rserver \
   --server-data-dir "${TMPDIR}" \
   --secure-cookie-key-file "${TMPDIR}/rstudio-server/secure-cookie-key" \
   --database-config-file "${DBCONF}" \
+  --server-daemonize=0 \
   --server-user $(whoami)

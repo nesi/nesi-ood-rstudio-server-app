@@ -1,15 +1,22 @@
+echo "Running before.sh.erb script"
 # This script (`before.sh.erb`) is sourced directly into the main Bash script
 # that is run when the batch job starts up. It is called before the `script.sh`
 # is forked off into a separate process.
 # Export the module function if it exists
 [[ $(type -t module) == "function" ]] && export -f module
 
-# Find available port to run server on
-port=$(find_port)
+exec &> >(tee -a "pod.log")
+
+source /bin/find_host_port
+source /bin/save_passwd_as_secret
+export password="$PASSWORD"
+export host="$HOST_CFG"
+export port="$PORT_CFG"
 
 # Define a password and export it for RStudio authentication
 password="$(create_passwd 16)"
 export RSTUDIO_PASSWORD="${password}"
+/bin/bash /opt/open_ondemand/helpers/k8_helper csrf_token "$csrf_token"
 
 # Define CSRF_TOKEN and export it for auth
 <%-
