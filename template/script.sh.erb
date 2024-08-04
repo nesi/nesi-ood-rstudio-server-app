@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
+echo "Running script.sh.erb script"
+
+echo "module purge"
 module purge
 
 # load RStudio Server
+echo "module load"
 module load <%= context.Rserver %>
 
 # load R
@@ -41,7 +45,6 @@ sed 's/^ \{2\}//' > "${RSESSION_WRAPPER_FILE}" << EOL
   export RSESSION_LOG_FILE="$WORKING_DIR/rsession.log"
   exec &>>"\${RSESSION_LOG_FILE}"
 
-
   # Launch the original command
   echo "Launching rsession..."
   set -x
@@ -57,7 +60,7 @@ umask 077
 sed 's/^ \{2\}//' > "${DBCONF}" << EOL
   # set database location
   provider=sqlite
-  directory=/tmp/${USER}/${SLURM_JOB_ID}/rstudio-server/db
+  directory=/tmp/${USER}/rstudio-server/db
 EOL
 )
 chmod 700 "${DBCONF}"
@@ -72,7 +75,7 @@ module list
 echo "Starting up rserver..."
 set -x
 rserver \
-  --www-port ${port} \
+  --www-port 8080 \
   --auth-none 0 \
   --auth-pam-helper-path "${RSTUDIO_AUTH}" \
   --auth-encrypt-password 0 \
@@ -80,4 +83,5 @@ rserver \
   --server-data-dir "${TMPDIR}" \
   --secure-cookie-key-file "${TMPDIR}/rstudio-server/secure-cookie-key" \
   --database-config-file "${DBCONF}" \
+  --server-daemonize=0 \
   --server-user $(whoami)
