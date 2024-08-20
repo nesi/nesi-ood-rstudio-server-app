@@ -9,7 +9,7 @@ batch_connect:
   conn_params:
     - csrf_token
 script:
-  wall_time: "<%= wall_time.to_i * 3600 %>"
+  wall_time: "<%= bc_num_hours.to_i * 3600 %>"
   native:
     container:
       name: "rstudio"
