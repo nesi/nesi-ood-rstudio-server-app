@@ -26,8 +26,8 @@ script:
       - type: nfs
         name: home
         host: <%= ood_nfs_server %>
-        path: /srv/homes
-        destination_path: /home/shared
+        path: /nesi/home
+        destination_path: /nesi/home
       - type: nfs
         name: software
         host: <%= software_nfs_server %>
