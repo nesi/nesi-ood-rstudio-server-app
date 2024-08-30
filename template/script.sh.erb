@@ -11,15 +11,8 @@ module load <%= context.Rserver %>
 # load R
 module load <%= context.Rapp %>
 
-# load additional Modules
-module load Python/3.11.6-foss-2023a
-
-#Only use the following if the os doesn't have pdflatex
-#module load TeXLive/2022
-
 # RStudioServer doesn't inherit "ulimit -s" from system config /etc/security/limits.d/custom.conf
 # Therefore, we are setting it here
-
 ulimit -s unlimited
 
 #
