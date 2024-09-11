@@ -29,6 +29,16 @@ script:
         path: /nesi/home
         destination_path: /nesi/home
       - type: nfs
+        name: project
+        host: <%= ood_nfs_server %>
+        path: /nesi/project
+        destination_path: /nesi/project
+      - type: nfs
+        name: nobackup
+        host: <%= ood_nfs_server %>
+        path: /nesi/nobackup
+        destination_path: /nesi/nobackup
+      - type: nfs
         name: software
         host: <%= software_nfs_server %>
         path: /mnt/data-migration

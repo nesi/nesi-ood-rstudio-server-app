@@ -1,3 +1,9 @@
+<%-
+  groups = OodSupport::User.new.groups.sort_by(&:id).tap { |groups|
+    groups.unshift(groups.delete(OodSupport::Process.group))
+  }.map(&:name).grep(/.*[0-9]{5}/)
+-%>
+
 # Batch Connect app configuration file
 #
 # @note Used to define the submitted cluster, title, description, and
@@ -11,6 +17,7 @@
 cluster: "my-k8s-cluster"
 
 form:
+  - account
   - Rserver
   - Rapp
   - bc_num_hours
@@ -58,6 +65,14 @@ attributes:
   # command that launches the Jupyter notebook within the batch job
   
   node: ""
+  account:
+    label: "Project Code"
+    widget: select
+    options:
+      <%- groups.each do |group| %>
+      - "<%= group %>"
+      <%- end %>
+    required: true
   bc_num_hours:
     max: 8
     min: 1
