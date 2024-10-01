@@ -49,6 +49,11 @@ script:
         path: /var/run/nslcd/socket
         destination_path: /var/run/nslcd/socket
       - type: host
+        name: nss-socket
+        host_type: Socket
+        path: /var/lib/sss/pipes/nss
+        destination_path: /var/lib/sss/pipes/nss
+      - type: host
         name: nsswitch-conf
         host_type: File
         path: /etc/nsswitch.conf
