@@ -9,4 +9,4 @@ OOD RStudio-serve  app for Analysis Environment (Beta)
 
 --database-config-file "${DBCONF}" sets the path for a new database config requirement in 1.4.1717.
 
-Your $TMPDIR location needs to be unique for this to work. We use our queueing system to set a unique $TMPDIR per job. You can also use export TMPDIR="$(mktemp -d)" within template/script.sh.erb.
+Your `$TMPDIR` location needs to be unique for this to work. We use our queueing system to set a unique `$TMPDIR` per job. You can also use export `TMPDIR="$(mktemp -d)"` within template/script.sh.erb.
