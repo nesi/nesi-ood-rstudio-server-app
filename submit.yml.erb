@@ -2,6 +2,15 @@
    user = OodSupport::User.new
    ood_nfs_server = Resolv.getaddress("ood-nfs-node")
    software_nfs_server = Resolv.getaddress("external-nfs")
+   
+   # Initialize nesi_gid to nil
+   nesi_gid = nil
+
+   # Fetch the GID for the account group only if the account is present
+   if account.present?
+     nesi_group = Etc.getgrnam(account)  # Fetching the group based on the account
+     nesi_gid = nesi_group ? nesi_group.gid : nil  # Get the GID, or nil if not found
+   end
 %>
 ---
 batch_connect:
@@ -12,10 +21,14 @@ script:
   wall_time: "<%= bc_num_hours.to_i * 3600 %>"
   native:
     container:
-      name: "rstudio"
+      name: "<%= account.present? ? "rstudio-#{account}" : 'rstudio' %>"
       image: "ghcr.io/nesi/nesi-docker-base:v0.2.0"
       command: ["/bin/bash","-l","<%= staged_root %>/job_script_content.sh"]
       restart_policy: 'OnFailure'
+      <% if nesi_gid %>
+      supplemental_groups:
+        - <%= nesi_gid %>
+      <% end %>
       env:
         TZ: "Pacific/Auckland"
         LMOD_SITE_MODULEPATH: "/opt/nesi/CS400_centos7_bdw/modules/all"
@@ -43,11 +56,6 @@ script:
         host: <%= software_nfs_server %>
         path: /mnt/data-migration
         destination_path: /opt/nesi
-      - type: host
-        name: nslcd-socket
-        host_type: Socket
-        path: /var/run/nslcd/socket
-        destination_path: /var/run/nslcd/socket
       - type: host
         name: nss-socket
         host_type: Socket
