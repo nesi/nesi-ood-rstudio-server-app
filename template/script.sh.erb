@@ -24,6 +24,11 @@ TMPDIR="$(mktemp -d)"
 export WORKING_DIR="<%= session.staged_root %>"
 export RSTUDIO_AUTH="$WORKING_DIR/bin/auth"
 
+#This is to resolve issue : https://github.com/nesi/nesi-ood-rstudio-server-app/issues/13
+if [ ! -f ~/.inputrc ] || ! grep -qF 'set enable-bracketed-paste off' ~/.inputrc; then
+    echo 'set enable-bracketed-paste off' >> ~/.inputrc
+fi
+
 #Try above first as auth wasn't working correctly with the following
 #export RSTUDIO_AUTH="${PWD}/bin/auth"
 
