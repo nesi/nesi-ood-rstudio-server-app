@@ -38,6 +38,9 @@ sed 's/^ \{2\}//' > "${RSESSION_WRAPPER_FILE}" << EOL
   export RSESSION_LOG_FILE="$WORKING_DIR/rsession.log"
   exec &>>"\${RSESSION_LOG_FILE}"
 
+  #R-Studio terminal struggles to inherit th e LMOD_SITE_MODULEPATH. Setting it manually to resolve issue #15
+  export LMOD_SITE_MODULEPATH=/opt/nesi/CS400_centos7_bdw/modules/all:$LMOD_SITE_MODULEPATH
+
   # Launch the original command
   echo "Launching rsession..."
   set -x
