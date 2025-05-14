@@ -6,10 +6,10 @@ module purge
 
 # load RStudio Server
 echo "module load"
-module load <%= context.Rserver %>
+module load <%= context.rserver %>
 
 # load R
-module load <%= context.Rapp %>
+module load <%= context.rapp %>
 
 # RStudioServer doesn't inherit "ulimit -s" from system config /etc/security/limits.d/custom.conf
 # Therefore, we are setting it here
