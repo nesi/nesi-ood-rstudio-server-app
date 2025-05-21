@@ -85,4 +85,5 @@ rserver \
   --secure-cookie-key-file "${TMPDIR}/rstudio-server/secure-cookie-key" \
   --database-config-file "${DBCONF}" \
   --server-daemonize=0 \
+  --auth-timeout-minutes=0 \
   --server-user $(whoami)
