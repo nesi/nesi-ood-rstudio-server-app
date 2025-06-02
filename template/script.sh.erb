@@ -1,8 +1,17 @@
 #!/usr/bin/env bash
 echo "Running script.sh.erb script"
 
+# TODO: MODULEPATH was wrong, had to manually set, look into why
+echo "PATH is: ${PATH}"
+echo "MODULEPATH is: ${MODULEPATH}"
+export MODULEPATH=/opt/nesi/modulefiles/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika
+echo "MODULEPATH is: ${MODULEPATH}"
+printenv > "<%= session.staged_root %>/printenv.txt"
+
 echo "module purge"
 module purge
+# TODO: at least via Slurm, this isn't loaded by default - why?
+module load NeSI/zen3
 
 # load RStudio Server
 echo "module load"
@@ -80,7 +89,7 @@ module list
 echo "Starting up rserver..."
 set -x
 rserver \
-  --www-port 8080 \
+  --www-port ${WWW_PORT} \
   --auth-none 0 \
   --auth-pam-helper-path "${RSTUDIO_AUTH}" \
   --auth-encrypt-password 0 \

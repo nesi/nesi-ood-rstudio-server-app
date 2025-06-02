@@ -10,13 +10,8 @@
 #   hard-coded/user-defined attributes that make up this Batch Connect app.
 ---
 
-# **MUST** set cluster id here that matches cluster configuration file located
-# under /etc/ood/config/clusters.d/*.yml
-# @example Use the Owens cluster at Ohio Supercomputer Center
-#     cluster: "owens"
-cluster: "my-k8s-cluster"
-
 form:
+  - cluster
   - account
   - rserver
   - rapp
@@ -32,25 +27,22 @@ title: RStudio-Server
 # Define attribute values that aren't meant to be modified by the user within
 # the Dashboard form
 attributes:
-  # Set the corresponding modules that need to be loaded for Jupyter to run
-  #
-  # @note It is called within the batch job as `module load <modules>` if
-  #   defined
-  # @example Do not load any modules
-  #     modules: ""
-  # @example Using default python module
-  #     modules: "python"
-  # @example Using specific python module
-  #     modules: "python/3.5"
-  # @example Using combination of modules
-  #     modules: "python/3.5 cuda/8.0.44"
-  modules: "RStudio-Server"
+  # select which cluster the app should run on
+  cluster:
+    widget: "select"
+    options:
+      - ["Kubernetes", "my-k8s-cluster"]
+      - ["Slurm HPC", "nesi_tdc_hpc"]
+    cacheable: false  # we always want k8s on top as the default?
 
+  # select RStudio-Server module
   rserver:
     widget: select
     label: "RStudio-Server Version"
     options:
       - [ "2024.12.1-563", "RStudio-Server/2024.12.1-563" ]
+
+  # select the R module(s) that should be loaded
   rapp:
     widget: select
     label: "R Version"
