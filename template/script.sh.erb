@@ -44,7 +44,7 @@ sed 's/^ \{2\}//' > "${RSESSION_WRAPPER_FILE}" << EOL
   exec &>>"\${RSESSION_LOG_FILE}"
 
   #R-Studio terminal struggles to inherit th e LMOD_SITE_MODULEPATH. Setting it manually to resolve issue #15
-  export LMOD_SITE_MODULEPATH="/opt/nesi/CS400_centos7_bdw/modules/all:/opt/nesi/lmod/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika":$LMOD_SITE_MODULEPATH
+  export LMOD_SITE_MODULEPATH="/opt/nesi/lmod/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika":$LMOD_SITE_MODULEPATH
 
   # Explicitly set R_LIBS_SITE based on the loaded R module
   # Capture the current R_LIBS_SITE from the environment
