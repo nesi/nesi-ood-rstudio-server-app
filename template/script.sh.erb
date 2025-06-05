@@ -43,17 +43,6 @@ sed 's/^ \{2\}//' > "${RSESSION_WRAPPER_FILE}" << EOL
   export RSESSION_LOG_FILE="$WORKING_DIR/rsession.log"
   exec &>>"\${RSESSION_LOG_FILE}"
 
-  ## Fix terminal colors for ls command with a wrapper script for system ls
-  mkdir -p ~/ondemand/ood_bin
-  cat > ~/ondemand/ood_bin/ls <<'EOF'
-  #!/bin/bash
-  /usr/bin/ls --color=auto "$@"
-EOF
-
-  chmod +x ~/ondemand/ood_bin/ls
-  export PATH="$HOME/ondemand/ood_bin:$PATH"
-  readonly PATH
-
   #R-Studio terminal struggles to inherit th e LMOD_SITE_MODULEPATH. Setting it manually to resolve issue #15
   export LMOD_SITE_MODULEPATH="/opt/nesi/lmod/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika":$LMOD_SITE_MODULEPATH
 
