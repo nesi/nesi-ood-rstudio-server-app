@@ -48,10 +48,11 @@ sed 's/^ \{2\}//' > "${RSESSION_WRAPPER_FILE}" << EOL
   cat > ~/ondemand/ood_bin/ls <<'EOF'
   #!/bin/bash
   /usr/bin/ls --color=auto "$@"
-  EOF  
-  
+EOF
+
   chmod +x ~/ondemand/ood_bin/ls
   export PATH="$HOME/ondemand/ood_bin:$PATH"
+  readonly PATH
 
   #R-Studio terminal struggles to inherit th e LMOD_SITE_MODULEPATH. Setting it manually to resolve issue #15
   export LMOD_SITE_MODULEPATH="/opt/nesi/lmod/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika":$LMOD_SITE_MODULEPATH
