@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 echo "Running script.sh.erb script"
 
-# TODO: MODULEPATH was wrong, had to manually set, look into why
-echo "PATH is: ${PATH}"
-echo "MODULEPATH is: ${MODULEPATH}"
-export MODULEPATH=/opt/nesi/modulefiles/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika
-echo "MODULEPATH is: ${MODULEPATH}"
-printenv > "<%= session.staged_root %>/printenv.txt"
+# TODO: NeSI/zen3 was not loaded, look into it
+echo "list modules:"
+ml
+echo "load NeSI/zen3"
+ml NeSI/zen3
+echo "list modules:"
+ml
 
 echo "module purge"
 module purge
-# TODO: at least via Slurm, this isn't loaded by default - why?
-module load NeSI/zen3
 
 # load RStudio Server
 echo "module load"
