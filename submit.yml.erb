@@ -42,7 +42,7 @@ script:
   native:
     container:
       name: "<%= account.present? ? "rstudio-#{account}" : 'rstudio' %>"
-      image: "ghcr.io/nesi/nesi-docker-base:v0.5.0"
+      image: "ghcr.io/nesi/nesi-docker-base:v0.6.0"
       command: ["/bin/bash","-l","<%= staged_root %>/job_script_content.sh"]
       restart_policy: 'OnFailure'
       <% if all_supplemental_groups.any? %>
@@ -53,7 +53,7 @@ script:
       <% end %>
       env:
         TZ: "Pacific/Auckland"
-        LMOD_SITE_MODULEPATH: "/opt/nesi/CS400_centos7_bdw/modules/all:/opt/nesi/lmod/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika"
+        LMOD_SITE_MODULEPATH: "/opt/nesi/lmod/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika"
         PRIMARY_PROJECT: "<%= account %>"
         <% if additional_projects.present? %>
         ADDITIONAL_PROJECTS: "<%= Array(additional_projects).join(':') %>"
