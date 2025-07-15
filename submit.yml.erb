@@ -15,7 +15,7 @@
    # Same approach as used in form.yml
    all_user_groups = OodSupport::User.new.groups.sort_by(&:id).tap { |groups|
      groups.unshift(groups.delete(OodSupport::Process.group))
-   }.map(&:name).grep(/.*[0-9]{5}/)
+   }.map(&:name)
    
    # Collect GIDs for ALL user's projects (not just selected ones)
    additional_gids = []
