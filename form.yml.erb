@@ -2,6 +2,11 @@
   groups = OodSupport::User.new.groups.sort_by(&:id).tap { |groups|
     groups.unshift(groups.delete(OodSupport::Process.group))
   }.map(&:name).grep(/.*[0-9]{5}/)
+
+  all_groups = OodSupport::User.new.groups.sort_by(&:id).tap { |groups|
+    groups.unshift(groups.delete(OodSupport::Process.group))
+  }.map(&:name)
+  has_slurm_apps = all_groups.include?("nesi-staff") || all_groups.include?("ondemand-slurm-apps")
 -%>
 
 # Batch Connect app configuration file
@@ -10,19 +15,15 @@
 #   hard-coded/user-defined attributes that make up this Batch Connect app.
 ---
 
-# **MUST** set cluster id here that matches cluster configuration file located
-# under /etc/ood/config/clusters.d/*.yml
-# @example Use the Owens cluster at Ohio Supercomputer Center
-#     cluster: "owens"
-cluster: "my-k8s-cluster"
-
 form:
+  - cluster
   - account
   - rserver
   - rapp
   - bc_num_hours
   - num_cores
   - num_mem
+  - gpu
   - node
 description: Request a RStudio-Server
 submit: submit.yml.erb
@@ -32,25 +33,32 @@ title: RStudio-Server
 # Define attribute values that aren't meant to be modified by the user within
 # the Dashboard form
 attributes:
-  # Set the corresponding modules that need to be loaded for Jupyter to run
-  #
-  # @note It is called within the batch job as `module load <modules>` if
-  #   defined
-  # @example Do not load any modules
-  #     modules: ""
-  # @example Using default python module
-  #     modules: "python"
-  # @example Using specific python module
-  #     modules: "python/3.5"
-  # @example Using combination of modules
-  #     modules: "python/3.5 cuda/8.0.44"
-  modules: "RStudio-Server"
+  # select which cluster the app should run on
+  cluster:
+    widget: "select"
+    options:
+      - [
+          "Kubernetes", "my-k8s-cluster",
+          data-hide-gpu: true,
+          data-set-gpu: 'none',
+        ]
+<% if has_slurm_apps %>
+      - ["Slurm HPC", "nesi_tdc_hpc"]
+    help: |
+      Kubernetes jobs are more likely to start promptly - "Slurm HPC" jobs may have to wait in the queue.
+      If you need Apptainer or GPUs then you must choose "Slurm HPC" currently.
+<% end %>
+    cacheable: false  # we always want k8s on top as the default?
 
+  # select RStudio-Server module
   rserver:
     widget: select
     label: "RStudio-Server Version"
     options:
       - [ "2024.12.1-563", "RStudio-Server/2024.12.1-563" ]
+    display: true
+
+  # select the R module(s) that should be loaded
   rapp:
     widget: select
     label: "R Version"
@@ -61,6 +69,7 @@ attributes:
       - ["Bioconductor-3.17", "R-bundle-Bioconductor/3.17-gimkl-2022a-R-4.3.1"]
       - ["R-Geo/4.3.2", "R-Geo/4.3.2-foss-2023a"]
       - ["R-Geo/4.2.1", "R-Geo/4.2.1-gimkl-2022a"]
+    display: true
 
   # Any extra command line arguments to feed to the `jupyter notebook ...`
   # command that launches the Jupyter notebook within the batch job
@@ -74,6 +83,7 @@ attributes:
       - "<%= group %>"
       <%- end %>
     required: true
+    display: true
   bc_num_hours:
     max: 8
     min: 1
@@ -86,6 +96,7 @@ attributes:
     min: 1
     value: 2
     widget: number_field
+    display: true
   num_mem:
     label: Memory per job (GB)
     max: 32
@@ -93,6 +104,17 @@ attributes:
     step: 1
     value: 1
     widget: number_field
+    display: true
+  gpu:
+    label: GPU
+    widget: select
+    options:
+      - 'none'
+      - [ "L4 (24 GB VRAM, aimed at AI workloads, up to single precision)", 'L4' ]
+      - [ "H100 (96 GB VRAM, recommend submitting as Slurm jobs due to potential wait times)", "H100" ]
+    help: |
+      **WARNING**: selecting a GPU can significantly increase the time it takes for your session to start!
+    display: true
 
 # All of the attributes that make up the Dashboard form (in respective order),
 # and made available to the submit configuration file and the template ERB

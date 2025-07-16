@@ -2,19 +2,7 @@
 # that is run when the batch job starts up. It is called before the `script.sh`
 # is forked off into a separate process.
 # Export the module function if it exists
-[[ $(type -t module) == "function" ]] && export -f module
-
-exec &> >(tee -a "pod.log")
-
-# Define a password and export it for RStudio authentication
-source /bin/find_host_port
-source /bin/save_passwd_as_secret
-export password="$PASSWORD"
-export host="$HOST_CFG"
-export port="$PORT_CFG"
-
-echo "host is: ${host}"
-echo "port is: ${port}"
+#[[ $(type -t module) == "function" ]] && export -f module
 
 # Define CSRF_TOKEN and export it for auth
 <%-
@@ -23,8 +11,38 @@ echo "port is: ${port}"
 -%>
 export csrf_token="<%= csrftoken %>"
 
-echo "password is: $password"
-echo "csrf_token is: ${csrf_token}"
+<%- if context.cluster == "my-k8s-cluster" -%>
+exec &> >(tee -a "pod.log")
+
+# Define a password and export it for RStudio authentication
+source /bin/find_host_port
+source /bin/save_passwd_as_secret
+export password="$PASSWORD"
+export host="$HOST_CFG"
+export port="$PORT_CFG"
+export WWW_PORT=8080
+
 /bin/bash /opt/open_ondemand/helpers/k8_helper csrf_token "$csrf_token"
+
+<% else -%>
+# find available port to run server on
+export port=$(find_port ${host})
+export WWW_PORT=${port}
+
+# Define a password and export it for RStudio authentication
+export password="$(create_passwd 16)"
+
+<% end -%>
+
+# these are set by pam on normal ssh login
+export LMOD_CONFIG_DIR=/opt/nesi/etc/lmod
+export MODULEPATH_ROOT=/opt/nesi/lmod
+export MODULEPATH=/opt/nesi/lmod/generic
+export BASH_ENV=/usr/share/lmod/lmod/init/bash
+
+echo "host is: ${host}"
+echo "port is: ${port}"
+echo "password is: ${password}"
+echo "csrf_token is: ${csrf_token}"
 
 export RSTUDIO_PASSWORD="${password}"

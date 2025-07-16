@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 echo "Running script.sh.erb script"
 
+# TODO: NeSI/zen3 was not loaded, look into it
+echo "list modules:"
+ml
+echo "load NeSI/zen3"
+ml NeSI/zen3
+echo "list modules:"
+ml
+
 echo "module purge"
 module purge
 
@@ -43,6 +51,11 @@ sed 's/^ \{2\}//' > "${RSESSION_WRAPPER_FILE}" << EOL
   export RSESSION_LOG_FILE="$WORKING_DIR/rsession.log"
   exec &>>"\${RSESSION_LOG_FILE}"
 
+  export LMOD_CONFIG_DIR=/opt/nesi/etc/lmod
+  export MODULEPATH_ROOT=/opt/nesi/lmod
+  export MODULEPATH=/opt/nesi/lmod/generic
+  export BASH_ENV=/usr/share/lmod/lmod/init/bash
+
   #R-Studio terminal struggles to inherit th e LMOD_SITE_MODULEPATH. Setting it manually to resolve issue #15
   export LMOD_SITE_MODULEPATH="/opt/nesi/lmod/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika":$LMOD_SITE_MODULEPATH
 
@@ -80,7 +93,7 @@ module list
 echo "Starting up rserver..."
 set -x
 rserver \
-  --www-port 8080 \
+  --www-port ${WWW_PORT} \
   --auth-none 0 \
   --auth-pam-helper-path "${RSTUDIO_AUTH}" \
   --auth-encrypt-password 0 \
