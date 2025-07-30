@@ -59,6 +59,9 @@ script:
         <% if additional_projects.present? %>
         ADDITIONAL_PROJECTS: "<%= Array(additional_projects).join(':') %>"
         <% end %>
+        <% if additional_modules.present? %>
+        ADDITIONAL_MODULES: "<%= Array(additional_modules).reject(&:blank?).join(':') %>"
+        <% end %>
       port: "8080"
       cpu: "<%= num_cores %>"
       memory: "<%= num_mem %>Gi"

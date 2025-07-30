@@ -20,6 +20,7 @@ form:
   - account
   - rserver
   - rapp
+  - additional_modules
   - bc_num_hours
   - num_cores
   - num_mem
@@ -69,6 +70,70 @@ attributes:
       - ["Bioconductor-3.17", "R-bundle-Bioconductor/3.17-gimkl-2022a-R-4.3.1"]
       - ["R-Geo/4.3.2", "R-Geo/4.3.2-foss-2023a"]
       - ["R-Geo/4.2.1", "R-Geo/4.2.1-gimkl-2022a"]
+    display: true
+
+  # Additional modules selection
+  additional_modules:
+    widget: select
+    label: "Additional Modules (optional)"
+    multiple: true
+    options:
+      - ["None", ""]
+      <%- 
+      # Get available modules dynamically from LMOD paths
+      begin
+        module_paths = ["/opt/nesi/lmod/generic", "/opt/nesi/lmod/zen3", "/opt/nesi/lmod/mahuika"]
+        available_modules = []
+        
+        module_paths.each do |base_path|
+          if File.directory?(base_path)
+            Dir.glob("#{base_path}/**/*.lua").each do |file|
+              # Extract module name from file path
+              relative_path = file.sub("#{base_path}/", "")
+              module_name = relative_path.sub(/\.lua$/, "")
+              
+              # Skip R-related modules since they're handled separately
+              next if module_name =~ /^R\// || 
+                     module_name =~ /^R-/ ||
+                     module_name =~ /RStudio/ ||
+                     module_name =~ /^r-/ ||
+                     module_name =~ /Bioconductor/
+              
+              # Skip very common base modules that are typically auto-loaded
+              next if ["NeSI/zen3", "NeSI/mahuika"].include?(module_name)
+              
+              available_modules << module_name
+            end
+          end
+        end
+        
+        # Sort modules and create options
+        available_modules.uniq.sort.each do |mod|
+          # Create a friendly display name
+          display_name = mod.include?('/') ? "#{mod.split('/').first}/#{mod.split('/').last}" : mod
+      -%>
+      - ["<%= display_name %>", "<%= mod %>"]
+      <%- 
+        end
+      rescue => e
+        # Fallback to some common modules if dynamic discovery fails
+        fallback_modules = [
+          "GCC/11.3.0", "GCC/12.3.0", "CMake/3.24.3", "CMake/3.27.6",
+          "GDAL/3.5.0", "GDAL/3.7.1", "HDF5/1.12.2", "HDF5/1.14.0",
+          "NetCDF/4.9.0", "NetCDF/4.9.2", "GSL/2.7", "FFTW/3.3.10",
+          "OpenMPI/4.1.4", "CUDA/11.7.0", "CUDA/12.2.0"
+        ]
+        fallback_modules.each do |mod|
+      -%>
+      - ["<%= mod %>", "<%= mod %>"]
+      <%- 
+        end
+      end
+      -%>
+    help: |
+      Select additional modules needed for R package dependencies (e.g., compilers, libraries).
+      Hold Ctrl/Cmd to select multiple modules. These will be loaded alongside your chosen R version.
+      Common choices: GCC (compilers), GDAL (geospatial), HDF5/NetCDF (data formats), GSL (scientific computing).
     display: true
 
   # Any extra command line arguments to feed to the `jupyter notebook ...`

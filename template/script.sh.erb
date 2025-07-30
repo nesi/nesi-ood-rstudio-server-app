@@ -12,12 +12,35 @@ ml
 echo "module purge"
 module purge
 
+# Load additional modules first (if any) before loading R-related modules
+# This ensures proper dependency resolution
+if [ -n "$ADDITIONAL_MODULES" ]; then
+  echo "Loading additional modules: $ADDITIONAL_MODULES"
+  IFS=':' read -ra MODULES <<< "$ADDITIONAL_MODULES"
+  for module in "${MODULES[@]}"; do
+    if [ -n "$module" ] && [ "$module" != "None" ] && [ "$module" != "" ]; then
+      echo "Loading module: $module"
+      if module load "$module"; then
+        echo "Successfully loaded: $module"
+      else
+        echo "Warning: Failed to load module: $module"
+      fi
+    fi
+  done
+  echo "Additional modules loaded. Current module list:"
+  module list
+fi
+
 # load RStudio Server
-echo "module load"
+echo "module load RStudio Server"
 module load <%= context.rserver %>
 
 # load R
+echo "module load R"
 module load <%= context.rapp %>
+
+echo "Final module list after loading R and RStudio:"
+module list
 
 # RStudioServer doesn't inherit "ulimit -s" from system config /etc/security/limits.d/custom.conf
 # Therefore, we are setting it here
@@ -56,17 +79,33 @@ sed 's/^ \{2\}//' > "${RSESSION_WRAPPER_FILE}" << EOL
   export MODULEPATH=/opt/nesi/lmod/generic
   export BASH_ENV=/usr/share/lmod/lmod/init/bash
 
-  #R-Studio terminal struggles to inherit th e LMOD_SITE_MODULEPATH. Setting it manually to resolve issue #15
-  export LMOD_SITE_MODULEPATH="/opt/nesi/lmod/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika":$LMOD_SITE_MODULEPATH
+  #R-Studio terminal struggles to inherit the LMOD_SITE_MODULEPATH. Setting it manually to resolve issue #15
+  export LMOD_SITE_MODULEPATH="/opt/nesi/lmod/generic:/opt/nesi/lmod/zen3:/opt/nesi/lmod/mahuika":\$LMOD_SITE_MODULEPATH
+
+  # Load additional modules in the rsession environment as well
+  if [ -n "\$ADDITIONAL_MODULES" ]; then
+    echo "Loading additional modules in rsession: \$ADDITIONAL_MODULES"
+    IFS=':' read -ra MODULES <<< "\$ADDITIONAL_MODULES"
+    for module in "\${MODULES[@]}"; do
+      if [ -n "\$module" ] && [ "\$module" != "None" ] && [ "\$module" != "" ]; then
+        echo "Loading module in rsession: \$module"
+        module load "\$module" 2>/dev/null || echo "Warning: Failed to load \$module in rsession"
+      fi
+    done
+  fi
+
+  # Load R and RStudio modules in rsession
+  module load <%= context.rserver %> 2>/dev/null || echo "Warning: Failed to reload RStudio Server in rsession"
+  module load <%= context.rapp %> 2>/dev/null || echo "Warning: Failed to reload R in rsession"
 
   # Explicitly set R_LIBS_SITE based on the loaded R module
   # Capture the current R_LIBS_SITE from the environment
-  export R_LIBS_SITE="${R_LIBS_SITE}"
+  export R_LIBS_SITE="\${R_LIBS_SITE}"
 
   # Launch the original command
   echo "Launching rsession..."
   set -x
-  exec rsession --r-libs-user "${R_LIBS_USER}" "\${@}"
+  exec rsession --r-libs-user "\${R_LIBS_USER}" "\${@}"
 EOL
 )
 chmod 700 "${RSESSION_WRAPPER_FILE}"
@@ -87,6 +126,8 @@ chmod 700 "${DBCONF}"
 cd "${HOME}"
 
 # Output debug info
+echo "Final environment before starting RStudio Server:"
+echo "ADDITIONAL_MODULES=${ADDITIONAL_MODULES}"
 module list
 
 # Launch the RStudio Server
