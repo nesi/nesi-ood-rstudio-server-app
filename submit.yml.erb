@@ -60,8 +60,8 @@ script:
         ADDITIONAL_PROJECTS: "<%= Array(additional_projects).join(':') %>"
         <% end %>
       port: "8080"
-      cpu: "<%= num_cores %>"
-      memory: "<%= num_mem %>Gi"
+      cpu: "<%= cores %>"
+      memory: "<%= memory %>Gi"
     mounts:
       - type: nfs
         name: home
