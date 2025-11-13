@@ -6,7 +6,10 @@
   all_groups = OodSupport::User.new.groups.sort_by(&:id).tap { |groups|
     groups.unshift(groups.delete(OodSupport::Process.group))
   }.map(&:name)
+  
   has_slurm_apps = all_groups.include?("nesi-staff") || all_groups.include?("ondemand-slurm-apps")
+  
+  restricted_projects = ["nesi02659", "nesi99991"]
 -%>
 
 # Batch Connect app configuration file
@@ -21,8 +24,8 @@ form:
   - rserver
   - rapp
   - bc_num_hours
-  - num_cores
-  - num_mem
+  - cores
+  - memory
   - gpu
   - node
 description: Request a RStudio-Server
@@ -80,7 +83,16 @@ attributes:
     widget: select
     options:
       <%- groups.each do |group| %>
-      - "<%= group %>"
+      - [
+          "<%= group %>",       # visible label
+          "<%= group %>",       # value submitted
+          <% if restricted_projects.include?(group) %>
+          data-hide-memory: true,
+          data-set-memory: 4,
+          data-hide-cores: true,
+          data-set-cores: 2
+          <% end %>
+        ]
       <%- end %>
     required: true
     display: true
@@ -90,14 +102,14 @@ attributes:
     step: 1
     value: 1
     widget: number_field
-  num_cores:
+  cores:
     label: Number of cores
     max: 16
     min: 1
     value: 2
     widget: number_field
     display: true
-  num_mem:
+  memory:
     label: Memory per job (GB)
     max: 32
     min: 1
