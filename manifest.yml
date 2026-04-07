@@ -1,6 +1,6 @@
 ---
 name: RStudio Server
-category: Interactive Apps
+category: Applications
 role: batch_connect
 description: |
   This app will launch [RStudio Server], an IDE for [R], on a cluster node.
