@@ -39,6 +39,7 @@ batch_connect:
     - csrf_token
 <% if cluster == "my-k8s-cluster" -%>
 script:
+  accounting_id: "<%= account %>"
   wall_time: "<%= bc_num_hours.to_i * 3600 %>"
   native:
     container:
